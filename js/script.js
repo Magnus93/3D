@@ -25,14 +25,19 @@ function init () {
   canvas.addEventListener("click", function() {
     console.log("Clicked!");
   });
-  canvas.addEventListener("mousedown", getMousePos, false);
+
+  //canvas.addEventListener("mousemove", getMousePos, false);
 
   fillCanvas("#393f4c");
   myCube = getCube();
 }
 
-function getMousePos() {
-  //var 
+function getMousePos(e) {
+  var rect = canvas.getBoundingClientRect();
+  var posX = e.clientX - rect.left;
+  var posY = e.clientY - rect.top;
+  console.log(posX, posY);
+  return (posX, posY);
 }
 
 function run() {
