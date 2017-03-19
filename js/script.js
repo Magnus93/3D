@@ -2,10 +2,14 @@
 var canvas;
 var ctx;
 var myCube;
-var scale = 40;
+var scale = 120;
 var offsetX;
 var offsetY;
-var canvasColor;
+var canvasColor = "#393f4c";
+var lastMousePos = {x:0, y:0};
+var mousePos = {x:0, y:0};
+var mouseDown = false;
+var cubeObject = geo(getCube(), []);
 
 window.onload = function () {
   console.log("Started Script");
@@ -22,44 +26,103 @@ function init () {
   offsetY = canvas.height/2;
   canvasColor = window.getComputedStyle(document.body).getPropertyValue('--canvas-color').trim();
 
-  canvas.addEventListener("click", function() {
-    console.log("Clicked!");
+  canvas.addEventListener("mousedown", function() {
+    lastMousePos.x = mousePos.x;
+    lastMousePos.y = mousePos.y;
+    mouseDown = true;
   });
-
-  //canvas.addEventListener("mousemove", getMousePos, false);
+  canvas.addEventListener("mouseup", function() {
+    mouseDown = false;
+  });
+  canvas.addEventListener("mousemove", setMousePos, false);
 
   fillCanvas("#393f4c");
   myCube = getCube();
 }
 
-function getMousePos(e) {
-  var rect = canvas.getBoundingClientRect();
-  var posX = e.clientX - rect.left;
-  var posY = e.clientY - rect.top;
-  console.log(posX, posY);
-  return (posX, posY);
-}
+
 
 function run() {
+  fillCanvas(canvasColor);
+  if (mouseDown) {
+    drawLine(lastMousePos.x,lastMousePos.y,mousePos.x,mousePos.y, "red");
+  }
+
+  // Draw cube points for myCube
   for (var i = 0; i < myCube.length; i++) {
     drawPoint(offsetX+scale*myCube[i][0],
       offsetY+scale*myCube[i][1],
       "green");
   }
+
+  // Draw cubeObject
+  drawGeoOrto(cubeObject, "blue");
+
+  var drag = getMouseDrag();
+  rotateY(myCube, drag[0]*0.001);
+  rotateX(myCube, drag[1]*0.001);
 }
 
-
-
-
-function fillCanvas(color) {
-  ctx.fillStyle = color;
-  ctx.fillRect(0,0,canvas.width,canvas.height);
+function geo(pts, lns) {
+  return {
+    points: pts,
+    lines: lns
+  };
 }
 
-function drawPoint(x, y, color) {
-  ctx.fillStyle = color;
-  ctx.fillRect( x, y, 1, 1 );
+function drawGeoOrto(geo, color) {
+  for (var i = 0; i < geo.points.length; i++) {
+    drawPoint(offsetX+scale*geo.points[i][0],
+      offsetY+scale*geo.points[i][1],
+      color);
+  }
 }
+
+function rotateX(objList, angle) {
+  for (var i = 0; i < objList.length; i++) {
+    var y = objList[i][1]*Math.cos(angle)-objList[i][2]*Math.sin(angle);
+    var z = objList[i][1]*Math.sin(angle)+objList[i][2]*Math.cos(angle);
+    objList[i][1] = y;
+    objList[i][2] = z;
+  }
+}
+
+function rotateY(objList, angle) {
+  for (var i = 0; i < objList.length; i++) {
+    var x =  objList[i][0]*Math.cos(angle)+objList[i][2]*Math.sin(angle);
+    var z = -objList[i][0]*Math.sin(angle)+objList[i][2]*Math.cos(angle);
+    objList[i][0] = x;
+    objList[i][2] = z;
+  }
+}
+
+function rotateZ(objList, angle) {
+  for (var i = 0; i < objList.length; i++) {
+    var x = objList[i][0]*Math.cos(angle)-objList[i][1]*Math.sin(angle);
+    var y = objList[i][0]*Math.sin(angle)+objList[i][1]*Math.cos(angle);
+    objList[i][0] = x;
+    objList[i][1] = y;
+  }
+}
+
+function setMousePos(e) {
+  var rect = canvas.getBoundingClientRect();
+  var posX = e.clientX - rect.left;
+  var posY = e.clientY - rect.top;
+  mousePos.x = posX;
+  mousePos.y = posY;
+}
+
+function getMouseDrag() {
+  if (mouseDown) {
+    var x = mousePos.x - lastMousePos.x;
+    var y = mousePos.y - lastMousePos.y;
+    return [x,y];
+  } else {
+    return [0,0];
+  }
+}
+
 
 function getCube() {
   var lst = [];

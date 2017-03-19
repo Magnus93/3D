@@ -3,12 +3,14 @@
   <head>
     <meta charset="utf-8">
     <link rel="stylesheet" href="css/master.css">
+    <script type="text/javascript" src="js/draw.js"></script>
+    <script type="text/javascript" src="js/geo.js"></script>
     <script type="text/javascript" src="js/script.js"></script>
     <title>3D</title>
   </head>
   <body>
-    <div id="canvasdiv">
-      <canvas onmousemove="getMousePos(event)" id="canvas" ></canvas>
+    <div id="canvasdiv" >
+      <canvas onmousemove="setMousePos(event)" id="canvas" width="960px" height="540px"></canvas>
     </div>
   </body>
 </html>
