@@ -1,15 +1,15 @@
 // global variables
 var canvas;
 var ctx;
-var myCube;
 var scale = 120;
 var offsetX;
 var offsetY;
 var canvasColor = "#393f4c";
 var lastMousePos = {x:0, y:0};
+var mousePos0 = {x:0, y:0};
 var mousePos = {x:0, y:0};
 var mouseDown = false;
-var cubeObject = geo(getCube(), []);
+var cubeObject = geoCube();
 
 window.onload = function () {
   console.log("Started Script");
@@ -37,7 +37,6 @@ function init () {
   canvas.addEventListener("mousemove", setMousePos, false);
 
   fillCanvas("#393f4c");
-  myCube = getCube();
 }
 
 
@@ -48,65 +47,68 @@ function run() {
     drawLine(lastMousePos.x,lastMousePos.y,mousePos.x,mousePos.y, "red");
   }
 
-  // Draw cube points for myCube
-  for (var i = 0; i < myCube.length; i++) {
-    drawPoint(offsetX+scale*myCube[i][0],
-      offsetY+scale*myCube[i][1],
-      "green");
-  }
-
   // Draw cubeObject
-  drawGeoOrto(cubeObject, "blue");
+  drawGeoOrto(cubeObject, "pink");
 
   var drag = getMouseDrag();
-  rotateY(myCube, drag[0]*0.001);
-  rotateX(myCube, drag[1]*0.001);
+  rotateY(cubeObject, drag[0]*-0.001);
+  rotateX(cubeObject, drag[1]*-0.001);
 }
 
-function geo(pts, lns) {
-  return {
-    points: pts,
-    lines: lns
-  };
-}
+
 
 function drawGeoOrto(geo, color) {
-  for (var i = 0; i < geo.points.length; i++) {
-    drawPoint(offsetX+scale*geo.points[i][0],
-      offsetY+scale*geo.points[i][1],
-      color);
+  // Draw lines
+  for (i in geo.lines) {
+    var pixStart = getPixelPosOrto(geo.points[geo.lines[i][0]]);
+    var pixEnd   = getPixelPosOrto(geo.points[geo.lines[i][1]]);
+    drawLine(pixStart[0], pixStart[1], pixEnd[0], pixEnd[1], "aqua");
+  }
+
+  // Draw points
+  for (i in geo.points) {
+    var pixPos = getPixelPosOrto(geo.points[i]);
+    drawPoint(pixPos[0], pixPos[1], color);
   }
 }
 
-function rotateX(objList, angle) {
-  for (var i = 0; i < objList.length; i++) {
-    var y = objList[i][1]*Math.cos(angle)-objList[i][2]*Math.sin(angle);
-    var z = objList[i][1]*Math.sin(angle)+objList[i][2]*Math.cos(angle);
-    objList[i][1] = y;
-    objList[i][2] = z;
+function getPixelPosOrto(point3D) {
+  var x2D = offsetX+scale*point3D[0];
+  var y2D = offsetY+scale*point3D[1];
+  return [x2D, y2D];
+}
+
+function rotateX(obj, angle) {
+  for (var i = 0; i < obj.points.length; i++) {
+    var y = obj.points[i][1]*Math.cos(angle)-obj.points[i][2]*Math.sin(angle);
+    var z = obj.points[i][1]*Math.sin(angle)+obj.points[i][2]*Math.cos(angle);
+    obj.points[i][1] = y;
+    obj.points[i][2] = z;
   }
 }
 
-function rotateY(objList, angle) {
-  for (var i = 0; i < objList.length; i++) {
-    var x =  objList[i][0]*Math.cos(angle)+objList[i][2]*Math.sin(angle);
-    var z = -objList[i][0]*Math.sin(angle)+objList[i][2]*Math.cos(angle);
-    objList[i][0] = x;
-    objList[i][2] = z;
+function rotateY(obj, angle) {
+  for (var i = 0; i < obj.points.length; i++) {
+    var x =  obj.points[i][0]*Math.cos(angle)+obj.points[i][2]*Math.sin(angle);
+    var z = -obj.points[i][0]*Math.sin(angle)+obj.points[i][2]*Math.cos(angle);
+    obj.points[i][0] = x;
+    obj.points[i][2] = z;
   }
 }
 
-function rotateZ(objList, angle) {
-  for (var i = 0; i < objList.length; i++) {
-    var x = objList[i][0]*Math.cos(angle)-objList[i][1]*Math.sin(angle);
-    var y = objList[i][0]*Math.sin(angle)+objList[i][1]*Math.cos(angle);
-    objList[i][0] = x;
-    objList[i][1] = y;
+function rotateZ(obj, angle) {
+  for (var i = 0; i < obj.points.length; i++) {
+    var x = obj.points[i][0]*Math.cos(angle)-obj.points[i][1]*Math.sin(angle);
+    var y = obj.points[i][0]*Math.sin(angle)+obj.points[i][1]*Math.cos(angle);
+    obj.points[i][0] = x;
+    obj.points[i][1] = y;
   }
 }
 
 function setMousePos(e) {
   var rect = canvas.getBoundingClientRect();
+  mousePos0.x = mousePos.x+0;
+  mousePos0.y = mousePos.y+0;
   var posX = e.clientX - rect.left;
   var posY = e.clientY - rect.top;
   mousePos.x = posX;
@@ -115,24 +117,11 @@ function setMousePos(e) {
 
 function getMouseDrag() {
   if (mouseDown) {
-    var x = mousePos.x - lastMousePos.x;
-    var y = mousePos.y - lastMousePos.y;
+    var x = mousePos.x - lastMousePos.x;//mousePos0.x;
+    var y = mousePos.y - lastMousePos.y;//mousePos0.y;
+    //console.log("jajaja",x,y);
     return [x,y];
   } else {
     return [0,0];
   }
-}
-
-
-function getCube() {
-  var lst = [];
-  lst.push([ 1, 1, 1]);
-  lst.push([ 1, 1,-1]);
-  lst.push([ 1,-1, 1]);
-  lst.push([ 1,-1,-1]);
-  lst.push([-1, 1, 1]);
-  lst.push([-1, 1,-1]);
-  lst.push([-1,-1, 1]);
-  lst.push([-1,-1,-1]);
-  return lst;
 }
