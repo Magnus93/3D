@@ -9,7 +9,7 @@ var lastMousePos = {x:0, y:0};
 var mousePos0 = {x:0, y:0};
 var mousePos = {x:0, y:0};
 var mouseDown = false;
-var cubeObject = geoCube();
+var cubeObject = geoSphere();
 
 window.onload = function () {
   console.log("Started Script");
